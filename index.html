@@ -43,6 +43,8 @@
       line-height: 1.07;
       letter-spacing: -0.28px;
     }
+    br.sp-br { display: none; }
+    @media (max-width: 640px) { br.sp-br { display: block; } }
     .display-lg {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
       font-size: clamp(28px, 5vw, 48px);
@@ -931,7 +933,7 @@
 <section class="hero" id="top">
   <div class="container">
     <div class="hero-eyebrow">完全ガイド 2026</div>
-    <h1 class="hero-display">AIチームを動かして<br>仕事を変える</h1>
+    <h1 class="hero-display">AIチームを<br class="sp-br">動かして<br>仕事を変える</h1>
     <p class="lead">Genspark スーパーエージェント&カスタムエージェント<br>使いこなし完全ガイド</p>
     <div class="hero-cta-row">
       <a href="#what" class="btn-primary">読み始める</a>
