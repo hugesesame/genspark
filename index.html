@@ -810,6 +810,94 @@
       border-radius: 9999px;
     }
 
+    /* ===== PRICING ===== */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 40px;
+    }
+    @media (max-width: 780px) { .plan-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 440px) { .plan-grid { grid-template-columns: 1fr; } }
+
+    .plan-card {
+      border: 1px solid var(--hairline-soft);
+      border-radius: 18px;
+      padding: 24px 18px;
+      background: var(--canvas);
+      position: relative;
+    }
+    .plan-card.featured { border-color: var(--blue); border-width: 2px; }
+    .plan-badge {
+      position: absolute;
+      top: -11px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--blue);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      border-radius: 9999px;
+      white-space: nowrap;
+    }
+    .plan-name  { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .plan-price { font-size: 26px; font-weight: 700; color: var(--ink); letter-spacing: -0.5px; margin-bottom: 2px; }
+    .plan-price span { font-size: 13px; font-weight: 400; color: var(--ink-muted); }
+    .plan-credits { font-size: 13px; font-weight: 600; color: var(--blue); margin: 10px 0 4px; }
+    .plan-reset   { font-size: 12px; color: var(--ink-muted); margin-bottom: 14px; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .plan-features li {
+      font-size: 13px; line-height: 1.4; color: var(--ink-muted);
+      padding-left: 16px; position: relative;
+    }
+    .plan-features li::before { content: "✓"; position: absolute; left: 0; color: var(--blue); font-size: 11px; top: 1px; }
+
+    .credit-table { width: 100%; border-collapse: collapse; margin-top: 28px; font-size: 14px; }
+    .credit-table th {
+      text-align: left; font-size: 12px; font-weight: 600;
+      color: var(--ink-muted); letter-spacing: 0.4px; text-transform: uppercase;
+      padding: 8px 12px; border-bottom: 1px solid var(--hairline-soft);
+    }
+    .credit-table td { padding: 12px; border-bottom: 1px solid var(--hairline-soft); color: var(--ink); }
+    .credit-table tr:last-child td { border-bottom: none; }
+    .credit-badge {
+      display: inline-block; font-size: 12px; font-weight: 600;
+      padding: 3px 10px; border-radius: 9999px;
+    }
+    .credit-free { background: #e8f5e9; color: #2e7d32; }
+    .credit-low  { background: #e3f2fd; color: #1565c0; }
+    .credit-mid  { background: #fff8e1; color: #e65100; }
+    .credit-high { background: #fce4ec; color: #c62828; }
+
+    .special-box {
+      margin-top: 40px;
+      background: linear-gradient(135deg, #1d1d1f, #2a2a2c);
+      border-radius: 20px;
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .special-box::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--blue), #2997ff, #00c8ff);
+    }
+    .special-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--blue-on-dark); margin-bottom: 10px; }
+    .special-title   { font-size: clamp(18px, 3vw, 22px); font-weight: 700; color: #fff; margin-bottom: 16px; letter-spacing: -0.3px; }
+    .special-list    { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .special-list li { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.75); padding-left: 20px; position: relative; }
+    .special-list li::before { content: "✦"; position: absolute; left: 0; color: var(--blue-on-dark); font-size: 10px; top: 4px; }
+    .special-warning {
+      margin-top: 18px; padding: 12px 16px;
+      background: rgba(255,200,0,0.1); border: 1px solid rgba(255,200,0,0.2);
+      border-radius: 10px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.7);
+    }
+    .special-warning strong { color: #ffd60a; }
+
     /* ===== MOBILE TWEAKS ===== */
     @media (max-width: 480px) {
       .tile-light, .tile-parch, .tile-dark, .tile-dark2 { padding: 56px 0; }
@@ -832,6 +920,7 @@
       <li><a href="#prompts">プロンプト</a></li>
       <li><a href="#mail">メール</a></li>
       <li><a href="#rag">RAG</a></li>
+      <li><a href="#pricing">料金</a></li>
     </ul>
   </div>
 </nav>
@@ -1647,7 +1736,185 @@
   </div>
 </section>
 
-<!-- ===== SECTION 8: FAQ ===== -->
+<!-- ===== SECTION 8: 料金プラン・クレジット ===== -->
+<section class="tile-light" id="pricing">
+  <div class="container">
+    <div class="section-eyebrow">Chapter 08</div>
+    <h2 class="display-lg section-title">料金プランとクレジットの仕組み</h2>
+    <p class="lead section-lead">
+      Gensparkは「クレジット」を消費してAI機能を使う仕組みです。<br>
+      プランを選ぶ前に基本を理解しておきましょう。
+    </p>
+
+    <!-- プラン比較 -->
+    <div class="plan-grid">
+      <div class="plan-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">$0<span> /月</span></div>
+        <div class="plan-credits">200クレジット/日</div>
+        <div class="plan-reset">🔄 毎日リセット</div>
+        <ul class="plan-features">
+          <li>Super Agentの基本機能</li>
+          <li>ストレージ 1GB</li>
+          <li>追加購入で拡張可能</li>
+        </ul>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-badge">おすすめ</div>
+        <div class="plan-name">Plus</div>
+        <div class="plan-price">$24.99<span> /月</span></div>
+        <div class="plan-credits">10,000クレジット/月</div>
+        <div class="plan-reset">🔄 毎月リセット</div>
+        <ul class="plan-features">
+          <li>チャット・画像：0cr ※</li>
+          <li>商用利用権あり ※</li>
+          <li>ストレージ 50GB</li>
+          <li>年払いで $19.99/月</li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$249.99<span> /月</span></div>
+        <div class="plan-credits">125,000クレジット/月</div>
+        <div class="plan-reset">🔄 毎月リセット</div>
+        <ul class="plan-features">
+          <li>Plusの全特典 ※</li>
+          <li>大規模リサーチ向け</li>
+          <li>ストレージ 1TB</li>
+          <li>年払いで $199.99/月</li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Team</div>
+        <div class="plan-price">$30<span> /人/月</span></div>
+        <div class="plan-credits">12,000クレジット/月/人</div>
+        <div class="plan-reset">🔄 毎月リセット</div>
+        <ul class="plan-features">
+          <li>2〜150ユーザー対応</li>
+          <li>チーム共同利用</li>
+          <li>ストレージ 60GB/人</li>
+        </ul>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--ink-muted);margin-top:10px;">※ 2026年12月31日までの早期加入特典。詳細は下記参照。</p>
+
+    <!-- クレジット消費目安 -->
+    <div style="margin-top:48px;">
+      <h3 class="display-md" style="margin-bottom:8px;">クレジットの消費目安</h3>
+      <p style="font-size:15px;color:var(--ink-muted);">機能によって消費量が大きく異なります。重い処理ほど多く消費します。</p>
+      <table class="credit-table">
+        <thead>
+          <tr>
+            <th>機能</th>
+            <th>消費クレジット目安</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AIチャット（テキスト）</td>
+            <td><span class="credit-badge credit-free">0cr（2026年末まで）</span></td>
+          </tr>
+          <tr>
+            <td>AI画像生成</td>
+            <td><span class="credit-badge credit-free">0cr（2026年末まで）</span></td>
+          </tr>
+          <tr>
+            <td>動画生成（5秒程度）</td>
+            <td><span class="credit-badge credit-low">100〜200cr</span></td>
+          </tr>
+          <tr>
+            <td>Deep Research（深掘り調査）</td>
+            <td><span class="credit-badge credit-mid">100〜500cr</span></td>
+          </tr>
+          <tr>
+            <td>AIスライド作成</td>
+            <td><span class="credit-badge credit-mid">100〜400cr</span></td>
+          </tr>
+          <tr>
+            <td>Webサイト・LP生成</td>
+            <td><span class="credit-badge credit-high">800〜1,200cr</span></td>
+          </tr>
+          <tr>
+            <td>AI電話代行（Call for Me）</td>
+            <td><span class="credit-badge credit-low">約1cr/秒</span></td>
+          </tr>
+          <tr>
+            <td>複雑なワークフロー全体</td>
+            <td><span class="credit-badge credit-high">600〜2,000cr</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px;color:var(--ink-muted);margin-top:10px;">💡 生成が失敗した場合はクレジットは消費されません。未使用クレジットの翌月繰り越しは不可です。</p>
+    </div>
+
+    <!-- 2026年末特典 -->
+    <div class="special-box">
+      <div class="special-eyebrow">⏰ 期間限定特典</div>
+      <div class="special-title">2026年12月31日までの早期加入特典</div>
+      <ul class="special-list">
+        <li>有料プラン加入中は AIチャット・AI画像生成が <strong style="color:#fff;">0クレジット（事実上無制限）</strong> で利用可能</li>
+        <li>サブスクリプション有効期間中のAI生成コンテンツの <strong style="color:#fff;">商用利用権を保証</strong></li>
+        <li>クレジットはSuperAgent・動画・Deep Researchなどの重い処理にだけ使えばOK</li>
+      </ul>
+      <div class="special-warning">
+        ⚠️ <strong>2027年以降の注意点：</strong>チャット・画像生成もクレジット消費になる可能性があります。2026年末までに有料プランを使い倒しておくのがベストです。
+      </div>
+    </div>
+
+    <!-- クレジット節約術 -->
+    <div style="margin-top:52px;">
+      <h3 class="display-md" style="margin-bottom:8px;">クレジット節約術</h3>
+      <p style="font-size:15px;color:var(--ink-muted);margin-bottom:32px;">詳細な指示を事前に用意するだけで、消費を最大 <strong style="color:var(--ink);">88%削減</strong> した事例もあります。</p>
+      <div class="tips-list">
+        <div class="tip-row" style="background:var(--parchment);border:1px solid var(--hairline-soft);">
+          <div class="tip-icon">📝</div>
+          <div class="tip-text">
+            <h4 style="color:var(--ink);">事前に詳細な指示を用意する</h4>
+            <p style="color:var(--ink-muted);">指示が曖昧だとやり直しが発生しクレジットが二重消費されます。「何を・どんな形で・誰向けに」を事前に明確にしてから実行しましょう。</p>
+          </div>
+        </div>
+        <div class="tip-row" style="background:var(--parchment);border:1px solid var(--hairline-soft);">
+          <div class="tip-icon">💬</div>
+          <div class="tip-text">
+            <h4 style="color:var(--ink);">チャットで設計してからエージェントに渡す</h4>
+            <p style="color:var(--ink-muted);">チャット（0cr）で構成や方向性を固めてから、スライド生成などのクレジット消費機能に渡すのがコツ。設計図なしでいきなり実行するより大幅に節約できます。</p>
+          </div>
+        </div>
+        <div class="tip-row" style="background:var(--parchment);border:1px solid var(--hairline-soft);">
+          <div class="tip-icon">✂️</div>
+          <div class="tip-text">
+            <h4 style="color:var(--ink);">不要なステップを削除してから実行する</h4>
+            <p style="color:var(--ink-muted);">実行プランが表示されたら「このグラフは不要」など不要ステップを削除してから承認しましょう。それだけでクレジット消費量が大きく変わります。</p>
+          </div>
+        </div>
+        <div class="tip-row" style="background:var(--parchment);border:1px solid var(--hairline-soft);">
+          <div class="tip-icon">🎬</div>
+          <div class="tip-text">
+            <h4 style="color:var(--ink);">動画・Deep Researchは本当に必要な時だけ使う</h4>
+            <p style="color:var(--ink-muted);">動画生成（100〜200cr/5秒）やDeep Research（100〜500cr）は高コスト機能です。テキストや画像で代替できないか先に検討してから使いましょう。</p>
+          </div>
+        </div>
+        <div class="tip-row" style="background:var(--parchment);border:1px solid var(--hairline-soft);">
+          <div class="tip-icon">📅</div>
+          <div class="tip-text">
+            <h4 style="color:var(--ink);">月末に余ったクレジットは使い切る（繰り越し不可）</h4>
+            <p style="color:var(--ink-muted);">有料プランのクレジットは翌月に繰り越せません。月末に残っていたら積極的に使いましょう。残高は設定画面でいつでも確認できます。</p>
+          </div>
+        </div>
+        <div class="tip-row" style="background:var(--parchment);border:1px solid var(--hairline-soft);">
+          <div class="tip-icon">💴</div>
+          <div class="tip-text">
+            <h4 style="color:var(--ink);">年払いで約20%節約する</h4>
+            <p style="color:var(--ink-muted);">Plusは年払いで $19.99/月（年間約$60の節約）、Proは $199.99/月（年間約$600の節約）になります。長期利用なら年払いが断然お得です。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== SECTION 9: FAQ ===== -->
 <section class="tile-parch" id="faq">
   <div class="container">
     <div class="section-eyebrow">FAQ</div>
