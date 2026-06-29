@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GenSpark エージェント完全ガイド</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:         #0066cc;
+      --blue-dark:    #004fa3;
+      --blue-on-dark: #2997ff;
+      --ink:          #1d1d1f;
+      --ink-muted:    #6e6e73;
+      --ink-muted-lt: #86868b;
+      --canvas:       #ffffff;
+      --parchment:    #f5f5f7;
+      --tile-1:       #1d1d1f;
+      --tile-2:       #272729;
+      --tile-3:       #2a2a2c;
+      --hairline:     #d2d2d7;
+      --hairline-soft:#e8e8ed;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      font-size: 17px;
+      line-height: 1.47;
+      color: var(--ink);
+      background: var(--canvas);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== TYPOGRAPHY ===== */
+    .hero-display {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      font-size: clamp(36px, 8vw, 64px);
+      font-weight: 600;
+      line-height: 1.07;
+      letter-spacing: -0.28px;
+    }
+    .display-lg {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 600;
+      line-height: 1.10;
+      letter-spacing: -0.374px;
+    }
+    .display-md {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      font-size: clamp(22px, 3.5vw, 34px);
+      font-weight: 600;
+      line-height: 1.20;
+      letter-spacing: -0.374px;
+    }
+    .lead { font-size: clamp(18px, 2.5vw, 24px); font-weight: 400; line-height: 1.4; }
+    .tagline { font-size: 18px; font-weight: 600; letter-spacing: 0.2px; }
+    .body-strong { font-size: 17px; font-weight: 600; }
+    .caption { font-size: 14px; line-height: 1.43; letter-spacing: -0.224px; }
+    .fine-print { font-size: 12px; line-height: 1.5; color: var(--ink-muted); }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .container-wide {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ===== NAV ===== */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      height: 48px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .nav-logo {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--blue-on-dark); }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: #fff; }
+    @media (max-width: 640px) { .nav-links { display: none; } }
+
+    /* ===== HERO TILE ===== */
+    .hero {
+      background: var(--tile-1);
+      color: #fff;
+      text-align: center;
+      padding: 96px 24px 80px;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      background: rgba(41,151,255,0.15);
+      color: var(--blue-on-dark);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      margin-bottom: 28px;
+    }
+    .hero h1 { color: #fff; margin-bottom: 20px; }
+    .hero .lead { color: rgba(255,255,255,0.72); max-width: 560px; margin: 0 auto 40px; }
+    .hero-cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* ===== BUTTONS ===== */
+    .btn-primary {
+      display: inline-block;
+      background: var(--blue);
+      color: #fff;
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: 400;
+      padding: 11px 24px;
+      border-radius: 9999px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-primary:active { transform: scale(0.95); background: var(--blue-dark); }
+
+    .btn-ghost {
+      display: inline-block;
+      background: transparent;
+      color: var(--blue-on-dark);
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: 400;
+      padding: 10px 24px;
+      border-radius: 9999px;
+      border: 1px solid var(--blue-on-dark);
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-ghost:active { transform: scale(0.95); }
+
+    /* ===== SECTION TILES ===== */
+    .tile-light  { background: var(--canvas);     color: var(--ink);  padding: 80px 0; }
+    .tile-parch  { background: var(--parchment);  color: var(--ink);  padding: 80px 0; }
+    .tile-dark   { background: var(--tile-2);     color: #fff;        padding: 80px 0; }
+    .tile-dark2  { background: var(--tile-3);     color: #fff;        padding: 80px 0; }
+
+    .section-eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 12px;
+    }
+    .tile-dark  .section-eyebrow,
+    .tile-dark2 .section-eyebrow { color: var(--blue-on-dark); }
+
+    .section-title { margin-bottom: 16px; }
+    .section-lead  { color: var(--ink-muted); max-width: 600px; margin-bottom: 48px; }
+    .tile-dark  .section-lead,
+    .tile-dark2 .section-lead { color: rgba(255,255,255,0.65); }
+
+    /* ===== COMPARE BOX (AI vs Super Agent) ===== */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 40px;
+    }
+    @media (max-width: 580px) { .compare-grid { grid-template-columns: 1fr; } }
+
+    .compare-card {
+      border-radius: 18px;
+      padding: 28px 24px;
+    }
+    .compare-card.old {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .compare-card.new {
+      background: rgba(41,151,255,0.12);
+      border: 1px solid rgba(41,151,255,0.3);
+    }
+    .compare-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: rgba(255,255,255,0.5);
+    }
+    .compare-card.new h3 { color: var(--blue-on-dark); }
+    .compare-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .compare-card li {
+      font-size: 15px;
+      line-height: 1.4;
+      color: rgba(255,255,255,0.75);
+      padding-left: 20px;
+      position: relative;
+    }
+    .compare-card li::before {
+      content: "×";
+      position: absolute;
+      left: 0;
+      color: rgba(255,255,255,0.3);
+      font-size: 12px;
+      top: 2px;
+    }
+    .compare-card.new li::before { content: "✓"; color: var(--blue-on-dark); font-size: 13px; }
+
+    /* ===== AGENT CARDS ===== */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .agent-card {
+      background: var(--canvas);
+      border: 1px solid var(--hairline-soft);
+      border-radius: 18px;
+      padding: 24px 20px;
+      transition: box-shadow 0.2s;
+    }
+    .agent-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .agent-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+    .agent-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--ink); }
+    .agent-card p  { font-size: 14px; line-height: 1.5; color: var(--ink-muted); }
+
+    /* ===== FLOW STEPS ===== */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 40px;
+      position: relative;
+    }
+    .flow::before {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 28px;
+      bottom: 28px;
+      width: 2px;
+      background: rgba(41,151,255,0.25);
+    }
+    @media (max-width: 480px) { .flow::before { left: 16px; } }
+
+    .flow-step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 0 0 32px 0;
+    }
+    .flow-num {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 9999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+    .flow-body h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; padding-top: 9px; }
+    .flow-body p  { font-size: 15px; line-height: 1.55; color: rgba(255,255,255,0.7); }
+
+    /* ===== CREATION STEPS (light bg) ===== */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 40px;
+      counter-reset: step;
+      position: relative;
+    }
+    .step-list::before {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 28px;
+      bottom: 28px;
+      width: 2px;
+      background: var(--hairline);
+    }
+    .step-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding-bottom: 32px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 9999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+    .step-body { padding-top: 9px; }
+    .step-body h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
+    .step-body p  { font-size: 15px; line-height: 1.55; color: var(--ink-muted); }
+    .step-body .tip {
+      display: inline-block;
+      margin-top: 10px;
+      background: #f0f6ff;
+      color: var(--blue);
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+    }
+
+    /* ===== ACCORDION (プロンプト集) ===== */
+    .accordion { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+
+    .acc-item {
+      border: 1px solid var(--hairline-soft);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--canvas);
+    }
+    .acc-trigger {
+      width: 100%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 20px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+    }
+    .acc-trigger-inner { display: flex; align-items: center; gap: 12px; }
+    .acc-emoji { font-size: 22px; flex-shrink: 0; }
+    .acc-label { font-size: 16px; font-weight: 600; color: var(--ink); }
+    .acc-sublabel { font-size: 13px; color: var(--ink-muted); margin-top: 2px; }
+    .acc-chevron {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      background: var(--parchment);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s;
+      color: var(--ink-muted);
+      font-size: 12px;
+    }
+    .acc-item.open .acc-chevron { transform: rotate(180deg); }
+
+    .acc-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+    .acc-body-inner {
+      padding: 0 20px 24px;
+    }
+    .acc-body-inner p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink-muted);
+      margin-bottom: 16px;
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--tile-1);
+      color: #e5e5ea;
+      border-radius: 12px;
+      padding: 20px;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      overflow-x: auto;
+      position: relative;
+    }
+    .code-block .code-header {
+      font-family: -apple-system, sans-serif;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.2); }
+    .copy-btn.copied { color: #32d74b; }
+
+    /* ===== INFO CARDS ===== */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .info-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 24px 20px;
+    }
+    .info-card .info-icon { font-size: 28px; margin-bottom: 12px; }
+    .info-card h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+    .info-card p  { font-size: 14px; line-height: 1.55; color: rgba(255,255,255,0.65); }
+
+    /* ===== RAG STEPS ===== */
+    .rag-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .rag-card {
+      background: var(--canvas);
+      border: 1px solid var(--hairline-soft);
+      border-radius: 16px;
+      padding: 24px 20px;
+    }
+    .rag-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .rag-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .rag-card p  { font-size: 14px; line-height: 1.55; color: var(--ink-muted); }
+
+    /* ===== TIPS LIST ===== */
+    .tips-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 32px;
+    }
+    .tip-row {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .tip-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .tip-text h4 { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .tip-text p  { font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.65); }
+
+    /* ===== FAQ ===== */
+    .faq { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+    .faq-item {
+      border: 1px solid var(--hairline-soft);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .faq-trigger {
+      width: 100%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+    .faq-q { font-size: 16px; font-weight: 600; color: var(--ink); }
+    .faq-chevron {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      background: var(--parchment);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .faq-body-inner { padding: 0 20px 18px; font-size: 15px; line-height: 1.6; color: var(--ink-muted); }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--parchment);
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    footer .ft-logo { font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+    footer .ft-logo span { color: var(--blue); }
+    footer p { font-size: 13px; color: var(--ink-muted); line-height: 1.6; }
+    footer a { color: var(--blue); text-decoration: none; }
+
+    /* ===== FILE FORMAT PILLS ===== */
+    .format-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .pill {
+      background: var(--parchment);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1px solid var(--hairline);
+    }
+
+    /* ===== SCROLL ANCHOR OFFSET ===== */
+    [id] { scroll-margin-top: 64px; }
+
+    /* ===== ROLE CARDS ===== */
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 40px;
+    }
+    @media (max-width: 580px) { .role-grid { grid-template-columns: 1fr; } }
+
+    .role-card {
+      border-radius: 20px;
+      padding: 28px 24px;
+      position: relative;
+    }
+    .role-card.role-super {
+      background: #f0f6ff;
+      border: 1.5px solid #c0d8f8;
+    }
+    .role-card.role-sub {
+      background: var(--parchment);
+      border: 1.5px solid var(--hairline);
+    }
+    .role-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      margin-bottom: 14px;
+    }
+    .role-super .role-badge { background: var(--blue); color: #fff; }
+    .role-sub  .role-badge { background: var(--ink); color: #fff; }
+    .role-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+    .role-card h3 { font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .role-label { font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 12px; }
+    .role-sub .role-label { color: var(--ink-muted); }
+    .role-card p { font-size: 14px; line-height: 1.65; color: var(--ink-muted); }
+
+    /* ===== ORG CHART ===== */
+    .org-chart-wrap {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    .org-chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 20px;
+    }
+    .org-row { display: flex; justify-content: center; width: 100%; }
+
+    .org-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 20px;
+      border-radius: 16px;
+      text-align: center;
+      min-width: 200px;
+      max-width: 280px;
+    }
+    @media (max-width: 480px) { .org-node { min-width: 160px; } }
+
+    .org-icon { font-size: 26px; margin-bottom: 6px; }
+    .org-label { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .org-sub   { font-size: 12px; color: var(--ink-muted); margin-top: 4px; line-height: 1.4; }
+
+    .org-you   { background: var(--parchment); border: 1.5px solid var(--hairline); }
+    .org-super { background: #e8f0fe; border: 2px solid var(--blue); }
+    .org-super .org-label { color: var(--blue); }
+    .org-result { background: #f0fff5; border: 1.5px solid #a8e6bb; }
+    .org-result .org-label { color: #1a7a3a; }
+
+    .org-arrow-down {
+      font-size: 13px;
+      color: var(--ink-muted);
+      font-weight: 500;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    .org-sub-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .org-sub-node {
+      background: var(--parchment);
+      border: 1.5px solid var(--hairline);
+      padding: 14px 14px;
+      min-width: 80px;
+      max-width: 100px;
+      border-radius: 14px;
+    }
+    .org-sub-node .org-icon { font-size: 20px; }
+    .org-sub-node .org-label { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .org-sub-more { opacity: 0.55; }
+
+    /* ===== STRUCTURE POINT ===== */
+    .structure-point {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin-top: 40px;
+      background: #f0f6ff;
+      border: 1px solid #c0d8f8;
+      border-radius: 14px;
+      padding: 18px 20px;
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+    .sp-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .structure-point strong { color: var(--blue); }
+
+    /* ===== AI INBOX ===== */
+    .platform-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.85);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 9999px;
+    }
+
+    .inbox-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 700px) { .inbox-grid { grid-template-columns: 1fr; } }
+
+    .inbox-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 24px 20px;
+      position: relative;
+    }
+    .inbox-card-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 12px;
+    }
+    .inbox-icon { font-size: 28px; margin-bottom: 12px; }
+    .inbox-card h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .inbox-card p  { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.65); }
+
+    .inbox-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+    .inbox-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+    .tag-high { background: rgba(255,80,80,0.2);  color: #ff8080; border: 1px solid rgba(255,80,80,0.3); }
+    .tag-low  { background: rgba(255,200,50,0.15); color: #ffd060; border: 1px solid rgba(255,200,50,0.25); }
+    .tag-none { background: rgba(150,150,150,0.15);color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.1); }
+
+    .workflow-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .wf-trigger {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 7px 14px;
+      border-radius: 9999px;
+      white-space: nowrap;
+    }
+    .wf-arrow { color: rgba(255,255,255,0.3); font-size: 14px; }
+    .wf-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .wf-action {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--blue-on-dark);
+      background: rgba(41,151,255,0.12);
+      border: 1px solid rgba(41,151,255,0.25);
+      padding: 5px 12px;
+      border-radius: 9999px;
+    }
+
+    /* ===== MOBILE TWEAKS ===== */
+    @media (max-width: 480px) {
+      .tile-light, .tile-parch, .tile-dark, .tile-dark2 { padding: 56px 0; }
+      .hero { padding: 72px 24px 56px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#top">Gen<span>Spark</span> ガイド</a>
+    <ul class="nav-links">
+      <li><a href="#what">基本</a></li>
+      <li><a href="#structure">構造</a></li>
+      <li><a href="#agents">エージェント</a></li>
+      <li><a href="#super">仕組み</a></li>
+      <li><a href="#create">作り方</a></li>
+      <li><a href="#prompts">プロンプト</a></li>
+      <li><a href="#mail">メール</a></li>
+      <li><a href="#rag">RAG</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="top">
+  <div class="container">
+    <div class="hero-eyebrow">完全ガイド 2026</div>
+    <h1 class="hero-display">AIチームを動かして<br>仕事を変える</h1>
+    <p class="lead">GenSpark スーパーエージェント&カスタムエージェント<br>使いこなし完全ガイド</p>
+    <div class="hero-cta-row">
+      <a href="#what" class="btn-primary">読み始める</a>
+      <a href="#create" class="btn-ghost">作り方を見る</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 1: GenSparkとは ===== -->
+<section class="tile-dark" id="what">
+  <div class="container">
+    <div class="section-eyebrow">Chapter 01</div>
+    <h2 class="display-lg section-title">普通のAIと何が違う？</h2>
+    <p class="lead section-lead">
+      GenSparkは「1人のAI」に話しかけるのではなく、<br>
+      <strong style="color:#fff;">AIのチーム全体</strong>がタスクに応じて自動で動く次世代プラットフォームです。
+    </p>
+
+    <div class="compare-grid">
+      <div class="compare-card old">
+        <h3>従来のチャットAI</h3>
+        <ul>
+          <li>1つの質問に1つの答え</li>
+          <li>複雑な作業は自分で分解が必要</li>
+          <li>資料・スライド・表は別アプリ</li>
+          <li>タスクを直列で1つずつ処理</li>
+          <li>カスタマイズがほぼできない</li>
+        </ul>
+      </div>
+      <div class="compare-card new">
+        <h3>GenSpark スーパーエージェント</h3>
+        <ul>
+          <li>タスクを自動で細かく分解</li>
+          <li>専門エージェントを自律的に編成</li>
+          <li>スライド・表・文書を同時生成</li>
+          <li>複数エージェントが並列で高速処理</li>
+          <li>目的別カスタムエージェント作成可</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-grid" style="margin-top:40px;">
+      <div class="info-card">
+        <div class="info-icon">🧠</div>
+        <h3>リード（オーケストレーター）</h3>
+        <p>メインAIがタスクを理解し、どのサブエージェントに何を任せるかを自律的に判断します。</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">⚡️</div>
+        <h3>並列処理</h3>
+        <p>複数のサブエージェントが同時に稼働。リサーチ・資料作成・データ分析を同時に進めます。</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">📄</div>
+        <h3>Sparkpage出力</h3>
+        <p>各エージェントの成果物を1つの美しいWebレポート（Sparkpage）にまとめて提示します。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 1.5: スーパーエージェントとサブエージェントの関係 ===== -->
+<section class="tile-light" id="structure">
+  <div class="container">
+    <div class="section-eyebrow">Chapter 01.5</div>
+    <h2 class="display-lg section-title">スーパーエージェントとは何か</h2>
+    <p class="lead section-lead">
+      GenSparkの核心は「1人のAI」ではなく、<strong>司令官と専門家チームの階層構造</strong>にあります。
+    </p>
+
+    <!-- ロール比較カード -->
+    <div class="role-grid">
+      <div class="role-card role-super">
+        <div class="role-badge">司令塔</div>
+        <div class="role-icon">🧠</div>
+        <h3>スーパーエージェント</h3>
+        <div class="role-label">プロジェクトマネージャー</div>
+        <p>全体像を把握し、タスクを分割してサブエージェントに指示を出す。あなたから受け取ったゴールを「誰に・何を・どの順番でやらせるか」に変換する役割。</p>
+      </div>
+      <div class="role-card role-sub">
+        <div class="role-badge">実行部隊</div>
+        <div class="role-icon">⚡️</div>
+        <h3>サブエージェント</h3>
+        <div class="role-label">各分野のスペシャリスト</div>
+        <p>マネージャーから割り振られた「リサーチ」「執筆」「分析」「スライド作成」などの特定タスクに集中して実行する専門家。複数が同時並列で動く。</p>
+      </div>
+    </div>
+
+    <!-- 階層図 -->
+    <div class="org-chart-wrap">
+      <p class="org-chart-title">指示の流れ</p>
+
+      <!-- あなた -->
+      <div class="org-row">
+        <div class="org-node org-you">
+          <span class="org-icon">👤</span>
+          <span class="org-label">あなた（CEO）</span>
+          <span class="org-sub">ゴールを一言で伝えるだけ</span>
+        </div>
+      </div>
+
+      <div class="org-arrow-down">↓ ゴールを伝える</div>
+
+      <!-- スーパーエージェント -->
+      <div class="org-row">
+        <div class="org-node org-super">
+          <span class="org-icon">🧠</span>
+          <span class="org-label">スーパーエージェント</span>
+          <span class="org-sub">タスクを分解・サブエージェントに指示</span>
+        </div>
+      </div>
+
+      <div class="org-arrow-down">↓ 役割を分担して指示</div>
+
+      <!-- サブエージェント群 -->
+      <div class="org-sub-row">
+        <div class="org-node org-sub-node">
+          <span class="org-icon">🔍</span>
+          <span class="org-label">リサーチ</span>
+        </div>
+        <div class="org-node org-sub-node">
+          <span class="org-icon">✍️</span>
+          <span class="org-label">執筆</span>
+        </div>
+        <div class="org-node org-sub-node">
+          <span class="org-icon">📊</span>
+          <span class="org-label">分析</span>
+        </div>
+        <div class="org-node org-sub-node">
+          <span class="org-icon">🖼️</span>
+          <span class="org-label">スライド</span>
+        </div>
+        <div class="org-node org-sub-node org-sub-more">
+          <span class="org-icon">✨</span>
+          <span class="org-label">その他</span>
+        </div>
+      </div>
+
+      <div class="org-arrow-down">↓ 成果を統合してレポート化</div>
+
+      <!-- あなたへの返却 -->
+      <div class="org-row">
+        <div class="org-node org-result">
+          <span class="org-icon">📄</span>
+          <span class="org-label">Sparkpage（完成レポート）</span>
+          <span class="org-sub">あなたの元に届く</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ポイント -->
+    <div class="structure-point">
+      <div class="sp-icon">💡</div>
+      <div>
+        <strong>あなたが覚えておくべきこと：</strong><br>
+        スーパーエージェントは「AIのプロジェクトマネージャー」。あなたはゴールを伝えるだけで、タスクの分解・担当割り当て・並列実行・最終統合をすべてスーパーエージェントが自律的にこなします。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 2: サブエージェントの種類 ===== -->
+<section class="tile-parch" id="agents">
+  <div class="container-wide">
+    <div class="section-eyebrow">Chapter 02</div>
+    <h2 class="display-lg section-title">専門サブエージェントの種類</h2>
+    <p class="lead section-lead">
+      GenSparkには目的別の専門エージェントが揃っています。<br>リードAIがタスクに応じて自動で使い分けます。
+    </p>
+
+    <div class="agent-grid">
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#fff0f0;">🖼️</div>
+        <h3>AI Slides Agent</h3>
+        <p>プレゼン資料・ピッチデッキを自動生成。テーマ・構成・デザインをAIが一括で作成します。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#f0fff0;">📊</div>
+        <h3>AI Sheets Agent</h3>
+        <p>リサーチアナリストとして機能。競合の再生数・いいね・コメント数などをリアルタイムで自動収集してライブテーブルに整理します。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#f0f4ff;">📝</div>
+        <h3>AI Docs Agent</h3>
+        <p>企画書・提案書・仕様書・SNSキャプションなどフォーマットされたドキュメントを自動生成。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#fffbf0;">💻</div>
+        <h3>AI Developer（Code Agent）</h3>
+        <p>Webサイト・アプリ・ゲームをコード生成・実行。GitHubとの連携でプルリクエストまで自動対応します。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#fff0f8;">🎨</div>
+        <h3>AI Designer</h3>
+        <p>FLUX・Gemini Imagen 4など複数の画像生成AIモデルを使ってビジュアルコンテンツを生成します。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#f0f8ff;">🎬</div>
+        <h3>AI Video Agent</h3>
+        <p>テキスト→動画変換。Sora 2・Kling V2.5・Gemini Veo 3.1など14以上のモデルから最適なものを自動選択。クリップ延長・リップシンクも対応。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#fff0fb;">📞</div>
+        <h3>Call for Me</h3>
+        <p>AIが実際に電話をかけてレストラン予約・問い合わせを代行。成功率83%。通話内容はリアルタイムで画面表示（米国・日本の一部対応）。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#f0fffc;">🔍</div>
+        <h3>並列ウェブ検索</h3>
+        <p>複数ソースを同時に検索・クロスチェック。リアルタイムの市場調査・競合分析に使われます。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#f7f0ff;">✨</div>
+        <h3>Ephemeral Agent</h3>
+        <p>タスク専用にリアルタイムで自動生成される使い捨てエージェント。リードAIが必要と判断したとき自動で作られ、完了後に消えます。</p>
+      </div>
+      <div class="agent-card">
+        <div class="agent-icon" style="background:#fff8f0;">🌐</div>
+        <h3>Sparkpage Agent</h3>
+        <p>各エージェントの成果を統合し、広告なしの美しいWebページ（Sparkpage）として自動出力。URLで即共有できます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 3: スーパーエージェントの仕組み ===== -->
+<section class="tile-dark2" id="super">
+  <div class="container">
+    <div class="section-eyebrow">Chapter 03</div>
+    <h2 class="display-lg section-title">スーパーエージェントの仕組み</h2>
+    <p class="lead section-lead">
+      あなたが「ゴール」を伝えると、AIがプロジェクトマネージャーのように<br>
+      チームを組んで仕事を動かします。
+    </p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <h3>ゴールを入力</h3>
+          <p>チャットに大まかな目標（例：「新商品のSNS戦略を作って」）を入力するだけでOK。細かい指示は不要です。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <h3>リードAIがタスクを分解</h3>
+          <p>オーケストレーターAIがゴールを分析し、「どんなサブタスクに分けるか」「どのエージェントを使うか」を自律的に計画します。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <h3>サブエージェントが並列稼働</h3>
+          <p>複数の専門エージェントが同時に作業開始。市場調査・スライド作成・データ整理が同時進行します。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <h3>成果を統合して提示</h3>
+          <p>各エージェントの結果をリードAIが集約し、Sparkpageなどの形で一度に受け取れます。確認・修正して完成です。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips-list" style="margin-top:16px;">
+      <div class="tip-row">
+        <div class="tip-icon">💡</div>
+        <div class="tip-text">
+          <h4>あなたの立ち位置はCEO</h4>
+          <p>細かい作業指示ではなく「最初のゴール設定」と「成果物のチェック・修正」に集中するだけでOK。AIチームが自律的に動きます。</p>
+        </div>
+      </div>
+      <div class="tip-row">
+        <div class="tip-icon">🔄</div>
+        <div class="tip-text">
+          <h4>途中で軌道修正できる</h4>
+          <p>実行プランが表示されたら承認・修正が可能。「このステップは不要」「このエージェントを追加して」と指示できます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 4: カスタムエージェントの作り方 ===== -->
+<section class="tile-light" id="create">
+  <div class="container">
+    <div class="section-eyebrow">Chapter 04</div>
+    <h2 class="display-lg section-title">カスタムエージェントの作り方</h2>
+    <p class="lead section-lead">
+      プログラミング不要。自分だけの専門AIを5分で作れます。<br>
+      目的別に複数作っておくと、毎回ゼロから指示する手間がなくなります。
+    </p>
+
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Gensparkにログイン</h3>
+          <p><a href="https://genspark.ai" style="color:var(--blue);">genspark.ai</a> にアクセスしてアカウントにログインします。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>「Custom Agent」を開く</h3>
+          <p>ホーム画面中央または左サイドバーの「+ New（新規作成）」メニューから「Custom Agent（カスタムエージェント）」をクリックします。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>名前と説明を入力</h3>
+          <p>エージェントの名前（例：「SNSマーケター」「プロジェクト総責任者」）と、何をするAIかの説明文を入力します。</p>
+          <span class="tip">💡 名前はチームで使う場合にも分かりやすい名前にしましょう</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>指示文（Instructions）を入力</h3>
+          <p>このAIにどんな役割・行動をしてほしいかを書きます。下の「プロンプト集」からコピーして貼り付けるだけでOKです。</p>
+          <span class="tip">📋 次のChapter 05のプロンプトをそのまま使えます</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h3>（任意）ファイルをアップロード</h3>
+          <p>過去の実績・商品マニュアル・競合資料などをPDF/Word/CSV形式でアップロードすると、AIがそれを学習して精度が上がります。（→ Chapter 06 参照）</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h3>保存して完成</h3>
+          <p>「Create / Save」ボタンを押せば完成。自分だけで使う・URLで他の人に共有する、どちらも選べます。</p>
+          <span class="tip">🔗 URLを共有すればチームメンバーも同じエージェントを使えます</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Agent Store -->
+    <div style="margin-top:48px;padding:28px 24px;background:var(--parchment);border-radius:18px;border:1px solid var(--hairline-soft);">
+      <div style="font-size:13px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">ボーナス</div>
+      <h3 style="font-size:20px;font-weight:600;margin-bottom:10px;color:var(--ink);">Custom Super Agent Store</h3>
+      <p style="font-size:15px;line-height:1.6;color:var(--ink-muted);">
+        自分でゼロから作らなくても、コミュニティが公開しているカスタムエージェントを<strong style="color:var(--ink);">そのまま利用・コピー</strong>できるマーケットプレイスが存在します。気に入ったエージェントをフォークして自分用にカスタマイズすることも可能です。「SNSマーケター」「競合分析エージェント」「採用担当エージェント」など多様なテンプレートが揃っています。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 5: プロンプト集 ===== -->
+<section class="tile-parch" id="prompts">
+  <div class="container">
+    <div class="section-eyebrow">Chapter 05</div>
+    <h2 class="display-lg section-title">目的別プロンプト集</h2>
+    <p class="lead section-lead">
+      カスタムエージェント作成時の「Instructions（指示文）」にそのまま<br>
+      コピー&ペーストして使えるテンプレートです。
+    </p>
+
+    <div class="accordion">
+
+      <!-- プロンプト1: 汎用 -->
+      <div class="acc-item" id="acc1">
+        <button class="acc-trigger" onclick="toggleAcc('acc1')">
+          <div class="acc-trigger-inner">
+            <div class="acc-emoji">🎯</div>
+            <div>
+              <div class="acc-label">汎用プロジェクト管理プロンプト</div>
+              <div class="acc-sublabel">新規事業・技術企画・イベント企画など幅広く使える万能テンプレート</div>
+            </div>
+          </div>
+          <div class="acc-chevron">▼</div>
+        </button>
+        <div class="acc-body" id="acc1-body">
+          <div class="acc-body-inner">
+            <p>新規事業・技術計画・イベント企画など幅広いジャンルでサブエージェントチームを立ち上げたいときに使います。</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+              <div class="code-header">Instructions（指示文）</div>
+# 役割・目的
+あなたはこのプロジェクトの総責任者（リードエージェント）です。
+
+ユーザーから指示されたプロジェクトテーマに基づき、仕事量・タスクの専門性をみずから自律的に判断し、適切な専門サブエージェントをアサイン・編成して、プロジェクトを完結させてください。
+
+# ユーザーからの入力
+ユーザーがチャットに持ち込むテキストはすべて「プロジェクトテーマ」として認識してください。
+
+# 期待する成果物
+プロジェクトを効率的に達成するために、以下の要素を網羅した最終レポート（Sparkpage・データシート・スライド構成など）を作成してください。
+
+1. 市場調査・ターゲット分析（競合の価格帯・強み・弱みの比較を含む）
+2. ビジネスモデル・具体的な施策の提案（価格設定、集客・実行アイデア）
+3. 今後のロードマップ（立ち上げまでの具体的なステップ）
+
+# サブエージェントへの指示（オーケストレーション方針）
+- 必要に応じて、Gensparkの専門機能である「並列検索（ウェブ検索エージェント）」「AI Sheet Agent（データ分析）」「AI Slides Agent（資料作成）」などを積極的に並行で裏側から起動し、タスクを並列処理してください。
+- 各サブエージェントが持ち帰った個別のデータや成果物を、リードエージェントとして1つの美しい最終的な統合レポートにまとめてユーザーに提示してください。
+- 情報が不足している、または判断に迷う点がある場合は、作業を進める前に自律的にユーザーに質問を促してください。
+
+# 動作フロー
+ユーザーから「プロジェクトテーマ」が入力されたら、まず最初に「どのようなステップにタスクを分解し、どんなサブエージェントのチーム体制で進めるか」という実行プランを提示してください。ユーザーの承認または修正指示を得てから、各サブエージェントを起動して実際の作業に移ってください。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- プロンプト2: Instagram -->
+      <div class="acc-item" id="acc2">
+        <button class="acc-trigger" onclick="toggleAcc('acc2')">
+          <div class="acc-trigger-inner">
+            <div class="acc-emoji">📸</div>
+            <div>
+              <div class="acc-label">Instagram特化SNSマーケタープロンプト</div>
+              <div class="acc-sublabel">画像・動画投稿・ハッシュタグ戦略・ビジュアル世界観の設計に</div>
+            </div>
+          </div>
+          <div class="acc-chevron">▼</div>
+        </button>
+        <div class="acc-body" id="acc2-body">
+          <div class="acc-body-inner">
+            <p>Instagramのビジュアル表現やハッシュタグ戦略、ストーリーズ・リールの投稿設計をサブエージェントチームで一括対応します。</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+              <div class="code-header">Instructions（指示文）</div>
+# 役割・目的
+あなたはこのプロジェクトの総責任者（リードエージェント）であり、Instagramマーケティングのエキスパートです。
+
+ユーザーから指示された商品・サービス情報に基づき、自律的に専門サブエージェントを編成し、Instagramでファンを増やす運用・投稿プランを完結させてください。
+
+# ユーザーからの入力
+ユーザーがチャットに持ち込むテキスト（商品名・ターゲット・目的など）はすべて分析対象として認識してください。
+
+# 期待する成果物
+以下の要素を網羅した、視覚的で具体的なInstagram戦略レポート（Sparkpage・データシートなど）を作成してください。
+
+1. 「トレンド・競合調査」：Instagramで現在バズっているリール動画の傾向、競合アカウントのビジュアル表現、ターゲットに刺さるハッシュタグの調査
+2. 「アカウント世界観・ペルソナ」：発信の軸（テーマ）、プロフィール文の改善案、グリッド（投稿一覧）の統一感に関するヒント・設計
+3. 「フィード・リールズ・ストーリーズ投稿案」：今すぐ投稿できるキャプション（文章）テキスト案（最低3パターン）、ハッシュタグの選定（大・中・小キーワード）、投稿画像/動画の構成・レイアウト指示（ビジュアルイメージの具体的提案）
+
+# サブエージェントへの指示（オーケストレーション方針）
+- 必要に応じて、Gensparkの「並列検索（Instagramの最新トレンド）」「AI Sheet Agent（ハッシュタグ・競合分析データ整理）」「AI Slides / Document Agent（投稿カルーセル・動画台本の構成作成）」を自律的に起動・連携させてください。
+- 各サブエージェントの成果を1つの美しいマーケティング戦略レポートに統合して提示してください。
+
+# 動作フロー
+ユーザーから情報が入力されたら、まず最初に「どのようなアカウント戦略を組み立て、どのサブエージェントを起動するか」の概要を提示し、その後自動で詳細な作成・分析に移ってください。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- プロンプト3: X(Twitter) -->
+      <div class="acc-item" id="acc3">
+        <button class="acc-trigger" onclick="toggleAcc('acc3')">
+          <div class="acc-trigger-inner">
+            <div class="acc-emoji">🐦</div>
+            <div>
+              <div class="acc-label">X（旧Twitter）特化SNSマーケタープロンプト</div>
+              <div class="acc-sublabel">拡散・インプレッション獲得・スレッド設計・アルゴリズム対策に</div>
+            </div>
+          </div>
+          <div class="acc-chevron">▼</div>
+        </button>
+        <div class="acc-body" id="acc3-body">
+          <div class="acc-body-inner">
+            <p>140文字制限の中で拡散力を最大化し、フォロワーを増やすためのX戦略をサブエージェントチームが設計します。</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+              <div class="code-header">Instructions（指示文）</div>
+# 役割・目的
+あなたはこのプロジェクトの総責任者（リードエージェント）であり、X（旧Twitter）マーケティングのバズのアルゴリズムを知り尽くしたプロフェッショナルです。
+
+ユーザーから指示された商品・サービス情報に基づき、自律的に専門サブエージェントを編成し、インプレッションとエンゲージメントを最大化するX運用・投稿プランを完結させてください。
+
+# ユーザーからの入力
+ユーザーがチャットに持ち込むテキストはすべて分析対象として認識してください。
+
+# 期待する成果物
+以下の要素を網羅した、拡散性を意識したX戦略レポートを作成してください。
+
+1. 「トレンド・アルゴリズム調査」：現在のトレンドワードの傾向、Xの最新アルゴリズム（長文投稿の有効性、画像添付の影響など）、ベンチマークアカウントの分析
+2. 「アカウントブランディング」：ターゲット層（ペルソナ）の定義、プロフィール文の作成案、フォローされやすいプロフィール改善のヒント、日々の発信軸の設計
+3. 「バズ投稿テキスト案」：140文字以内のショートテキスト案、エンゲージメントを高めるためのスレッド投稿（長文テキスト）の構成案、切り口を変えて最低5パターン作成（ツイートの1行目、要約・アクション誘導を意識すること）
+
+# サブエージェントへの指示（オーケストレーション方針）
+- 必要に応じて、Gensparkの「並列検索（リアルタイムトレンドリサーチ）」「AI Sheet Agent（投稿時間・エンゲージメントのデータ予測）」「AI Document Agent（テキスト案・スレッドの作成）」を自律的に起動し、タスクを並列処理してください。
+- 全ての成果をリードエージェントとして1つにまとめ、すぐに実践できる投稿企画書としてユーザーに提示してください。
+
+# 動作フロー
+ユーザーから情報が入力されたら、まず最初に「どのようなX戦略を組み立て、どのサブエージェントを起動するか」の概要を提示し、その後自動で詳細な作成・分析に移ってください。</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /accordion -->
+  </div>
+</section>
+
+<!-- ===== SECTION 5.5: AI Inbox ===== -->
+<section class="tile-dark2" id="mail">
+  <div class="container">
+    <div class="section-eyebrow">Extra Feature</div>
+    <h2 class="display-lg section-title">AI Inbox<br>メールを丸ごと自動化する</h2>
+    <p class="lead section-lead">
+      受信・仕分け・返信下書きまで、メール業務をAIが代行。<br>
+      早期ユーザーの報告ではメール処理時間が<strong style="color:#fff;">最大50%削減</strong>、返信所要時間が<strong style="color:#fff;">15分→2分</strong>に短縮されています。
+    </p>
+
+    <!-- 対応プラットフォーム -->
+    <div style="margin-bottom:40px;">
+      <p style="font-size:13px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:14px;">対応メールサービス</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div class="platform-pill">
+          <span style="font-size:16px;">📧</span> Gmail / Google Workspace
+        </div>
+        <div class="platform-pill">
+          <span style="font-size:16px;">📨</span> Outlook / Microsoft 365
+        </div>
+      </div>
+    </div>
+
+    <!-- 3大機能カード -->
+    <div class="inbox-grid">
+
+      <div class="inbox-card">
+        <div class="inbox-card-num">01</div>
+        <div class="inbox-icon">🗂️</div>
+        <h3>自動トリアージ</h3>
+        <p>受信メールをAIがリアルタイムで解析し、優先度を3段階に自動分類。毎朝の未読500件も「今すぐ対応すべきもの」だけを抽出できます。</p>
+        <div class="inbox-tags">
+          <span class="inbox-tag tag-high">高優先</span>
+          <span class="inbox-tag tag-low">低優先</span>
+          <span class="inbox-tag tag-none">不要</span>
+        </div>
+      </div>
+
+      <div class="inbox-card">
+        <div class="inbox-card-num">02</div>
+        <div class="inbox-icon">✍️</div>
+        <h3>返信下書きの自動生成</h3>
+        <p>メール本文・過去スレッド・差出人との関係性をAIが読み解き、文脈に合った返信文を自動生成。署名の自動挿入にも対応しています。</p>
+        <div style="margin-top:14px;font-size:13px;color:rgba(255,255,255,0.5);">
+          💡 まず「下書き生成のみ」モードで使い始めるのがおすすめ
+        </div>
+      </div>
+
+      <div class="inbox-card">
+        <div class="inbox-card-num">03</div>
+        <div class="inbox-icon">⚙️</div>
+        <h3>ワークフロー自動化</h3>
+        <p>「このキーワードのメールが来たら自動返信してSlackに通知」といったカスタムルールを、コードなしで自然言語だけで設定できます。</p>
+        <div style="margin-top:14px;font-size:13px;color:rgba(255,255,255,0.5);">
+          💡 特定条件での自動対応を人間不在で一貫実行
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ワークフロー例 -->
+    <div style="margin-top:40px;">
+      <p style="font-size:13px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:16px;">ワークフロー自動化の例</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="workflow-row">
+          <div class="wf-trigger">見積依頼メール受信</div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-actions">
+            <span class="wf-action">自動返信</span>
+            <span class="wf-action">担当者通知</span>
+            <span class="wf-action">Slack共有</span>
+          </div>
+        </div>
+        <div class="workflow-row">
+          <div class="wf-trigger">緊急キーワード含有メール</div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-actions">
+            <span class="wf-action">優先度アップ</span>
+            <span class="wf-action">ラベル付与</span>
+          </div>
+        </div>
+        <div class="workflow-row">
+          <div class="wf-trigger">営業時間外の受信メール</div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-actions">
+            <span class="wf-action">翌朝リマインダー</span>
+            <span class="wf-action">自動受領返信</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GenSparkならではの強み -->
+    <div class="tips-list" style="margin-top:40px;">
+      <div class="tip-row">
+        <div class="tip-icon">🔗</div>
+        <div class="tip-text">
+          <h4>他エージェントとのチェーン実行が最大の強み</h4>
+          <p>「添付の見積書をAI Sheetsで比較分析してスライドにまとめて」のように、メールを起点にリサーチ・資料作成まで一気に実行できます。単体のメールツールにはない GenSpark ならではの使い方です。</p>
+        </div>
+      </div>
+      <div class="tip-row">
+        <div class="tip-icon">⚠️</div>
+        <div class="tip-text">
+          <h4>プライバシーに注意</h4>
+          <p>メール連携を行う際は、接続アカウントのアクセス許可を確認しましょう。機密情報を含むメールを扱う場合は、自社のセキュリティポリシーと照らし合わせてください。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 6: RAG ===== -->
+<section class="tile-light" id="rag">
+  <div class="container">
+    <div class="section-eyebrow">Chapter 06</div>
+    <h2 class="display-lg section-title">ファイル学習（RAG）で精度を爆上げ</h2>
+    <p class="lead section-lead">
+      過去データや自社ファイルをアップロードすると、<br>
+      AIがそれを記憶して回答の精度が劇的に向上します。
+    </p>
+
+    <div class="rag-steps">
+      <div class="rag-card">
+        <div class="rag-num">1</div>
+        <h3>資料を準備する</h3>
+        <p>過去の良かった投稿データ、商品仕様書、ブランドブック、競合のPDF資料などを用意します。</p>
+        <div class="format-pills" style="margin-top:12px;">
+          <span class="pill">PDF</span>
+          <span class="pill">Word</span>
+          <span class="pill">CSV</span>
+          <span class="pill">TXT</span>
+          <span class="pill">MD</span>
+        </div>
+      </div>
+      <div class="rag-card">
+        <div class="rag-num">2</div>
+        <h3>エージェント編集画面でアップロード</h3>
+        <p>カスタムエージェントの編集画面で「Knowledge（ナレッジ）」または「Files（ファイル追加）」の項目を探します。準備したファイルをドラッグ&ドロップでアップロードします。</p>
+      </div>
+      <div class="rag-card">
+        <div class="rag-num">3</div>
+        <h3>プロンプトに一言追加する</h3>
+        <p>指示文（Instructions）の「ユーザーからの入力」の直後に以下の1文を追加するとAIがファイルを優先参照します。</p>
+      </div>
+      <div class="rag-card">
+        <div class="rag-num">4</div>
+        <h3>高精度で回答が返ってくる</h3>
+        <p>アップロードした資料のトーン・実績・データパターンを反映した、あなたのビジネスに最適化された回答が得られます。</p>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;">
+      <p style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--ink);">プロンプトに追加する一文（コピーして使用）</p>
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+        <div class="code-header">Instructions 追記用テキスト</div>
+- 文脈把握や提案を行う際は、事前に「Knowledge/学習ファイル」に格納されている過去のデータや資料の内容を最優先で参照し、そのトーンや成功パターンを踏襲してください。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 7: Tips ===== -->
+<section class="tile-dark" id="tips">
+  <div class="container">
+    <div class="section-eyebrow">Chapter 07</div>
+    <h2 class="display-lg section-title">達人になるための Tips</h2>
+    <p class="lead section-lead">
+      GenSparkをフル活用して「AIの社長」になるためのポイントです。
+    </p>
+
+    <div class="tips-list">
+      <div class="tip-row">
+        <div class="tip-icon">🎯</div>
+        <div class="tip-text">
+          <h4>最初のゴールを具体的に書く</h4>
+          <p>「SNS運用を改善したい」より「20代女性向けコスメブランドのInstagramで3ヶ月でフォロワーを1000人増やしたい」のように具体的に書くと、AIの精度が大幅に上がります。</p>
+        </div>
+      </div>
+      <div class="tip-row">
+        <div class="tip-icon">🔍</div>
+        <div class="tip-text">
+          <h4>実行プランを必ず確認する</h4>
+          <p>エージェントが実行プランを提示したら、「このステップは不要」「このエージェントも追加して」と調整してから実行させましょう。この一手間でアウトプットの質が変わります。</p>
+        </div>
+      </div>
+      <div class="tip-row">
+        <div class="tip-icon">📁</div>
+        <div class="tip-text">
+          <h4>ファイル学習は最初にやっておく</h4>
+          <p>カスタムエージェントを作ったら、まずRAG（ファイルアップロード）を設定しましょう。あなたの過去データを学習させることで、他のAIとは別次元の精度になります。</p>
+        </div>
+      </div>
+      <div class="tip-row">
+        <div class="tip-icon">🔗</div>
+        <div class="tip-text">
+          <h4>エージェントはURLで共有できる</h4>
+          <p>作成したカスタムエージェントはURLで共有可能。チームメンバー全員が同じエージェントを使えるので、クオリティの統一ができます。</p>
+        </div>
+      </div>
+      <div class="tip-row">
+        <div class="tip-icon">📊</div>
+        <div class="tip-text">
+          <h4>Sparkpageを活用して成果物を共有</h4>
+          <p>エージェントが出力するSparkpageは美しいWebページ形式で、そのままクライアントや上司への提出資料として使えます。</p>
+        </div>
+      </div>
+      <div class="tip-row">
+        <div class="tip-icon">🎨</div>
+        <div class="tip-text">
+          <h4>用途別にエージェントを複数作る</h4>
+          <p>「Instagram用」「資料作成用」「リサーチ用」など、目的別に別々のカスタムエージェントを作っておくと、毎回ゼロから指示する手間が省けます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 8: FAQ ===== -->
+<section class="tile-parch" id="faq">
+  <div class="container">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="display-lg section-title">よくある質問</h2>
+
+    <div class="faq">
+
+      <div class="faq-item" id="faq1">
+        <button class="faq-trigger" onclick="toggleFaq('faq1')">
+          <span class="faq-q">GenSparkは無料で使えますか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq1-body">
+          <div class="faq-body-inner">
+            GenSparkは無料プランと有料プランがあります。基本的なチャットやエージェント機能は無料で試せますが、カスタムエージェントの高度な機能やRAG（ファイル学習）、大量のタスク実行は有料プランが必要になる場合があります。最新の料金は公式サイトでご確認ください。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq2">
+        <button class="faq-trigger" onclick="toggleFaq('faq2')">
+          <span class="faq-q">カスタムエージェントを作るのにプログラミングの知識は必要？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq2-body">
+          <div class="faq-body-inner">
+            一切不要です。このガイドのChapter 04・05のプロンプトをコピーして貼り付けるだけで、本格的なカスタムエージェントが作れます。プログラミングや特別な設定は必要ありません。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq3">
+        <button class="faq-trigger" onclick="toggleFaq('faq3')">
+          <span class="faq-q">Ephemeral Agent（一時エージェント）とは何ですか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq3-body">
+          <div class="faq-body-inner">
+            タスクのためだけにリアルタイムで自動生成される「使い捨て」の専門エージェントです。事前に登録されているわけではなく、そのタスクに最適な役割を持つAIがその場で作られ、タスク完了後は消滅します。ユーザー側で意識する必要はなく、リードAIが自動的に判断して使います。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq4">
+        <button class="faq-trigger" onclick="toggleFaq('faq4')">
+          <span class="faq-q">アップロードできるファイルのサイズに制限はありますか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq4-body">
+          <div class="faq-body-inner">
+            ファイルサイズや件数の上限はプランによって異なります。一般的には1ファイルあたり数MB〜数十MBが目安です。大きなファイルは内容を要約したものや、必要な部分だけを抜き出したファイルに分割してアップロードすることで精度が上がります。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq5">
+        <button class="faq-trigger" onclick="toggleFaq('faq5')">
+          <span class="faq-q">作ったカスタムエージェントはチームで共有できますか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq5-body">
+          <div class="faq-body-inner">
+            はい、可能です。保存したカスタムエージェントにはURLが発行されます。そのURLをチームメンバーに共有するだけで、同じエージェントを全員が使えるようになります。これによりチーム全体のアウトプット品質を統一できます。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq6">
+        <button class="faq-trigger" onclick="toggleFaq('faq6')">
+          <span class="faq-q">Sparkpageとは何ですか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq6-body">
+          <div class="faq-body-inner">
+            エージェントの成果物を美しいWebページ形式にまとめたものです。調査結果・戦略・提案が視覚的に整理されており、そのままURLで共有できます。クライアントへの提案書や社内報告として活用できる品質です。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq7">
+        <button class="faq-trigger" onclick="toggleFaq('faq7')">
+          <span class="faq-q">Call for Me は日本語で使えますか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq7-body">
+          <div class="faq-body-inner">
+            現在、Call for Me は英語が主な対応言語です。日本のビジネスへの発信には対応していますが、会話は英語で行われます。日本語での自然な通話対応はまだ発展途上です。将来的な日本語対応が期待されています。予約や問い合わせ先が英語対応している場合は今すぐ活用できます。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq8">
+        <button class="faq-trigger" onclick="toggleFaq('faq8')">
+          <span class="faq-q">AI Video Agent でどんな動画が作れますか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq8-body">
+          <div class="faq-body-inner">
+            テキストから動画・画像から動画を生成できます。Sora 2、Kling V2.5、Gemini Veo 3.1 など14以上のモデルが使え、AIが内容に応じて最適なモデルを自動選択（MOAスマート選択）します。クリップの延長・リップシンク・タイムライン編集も対応しており、SNS向けショート動画の作成に特に便利です。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq9">
+        <button class="faq-trigger" onclick="toggleFaq('faq9')">
+          <span class="faq-q">AI Inbox はどのメールサービスに対応していますか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq9-body">
+          <div class="faq-body-inner">
+            現在公式に対応しているのは <strong>Gmail / Google Workspace</strong> と <strong>Outlook / Microsoft 365</strong> の2系統です。GenSpark のワークスペース設定画面から連携を許可するだけで使い始められます。複数アカウントを同時接続して一元管理することも可能です。Yahoo!メールなど他サービスへの対応は現時点では未確認のため、公式サイトでご確認ください。
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq10">
+        <button class="faq-trigger" onclick="toggleFaq('faq10')">
+          <span class="faq-q">AI Inbox の自動返信は勝手に送信されますか？</span>
+          <div class="faq-chevron">▼</div>
+        </button>
+        <div class="faq-body" id="faq10-body">
+          <div class="faq-body-inner">
+            初期設定では「下書き生成のみ」モードになっており、AIが自動送信することはありません。まずはAIが生成した下書きを確認・編集してから送信する運用で始めるのが推奨です。慣れてきたらカスタムルールで特定条件の自動送信を有効にすることもできます。
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="ft-logo">Gen<span>Spark</span> エージェント完全ガイド</div>
+  <p>このガイドはGenSpark初心者がサブエージェント・カスタムエージェントを<br>使いこなせるようになることを目的として作成しました。</p>
+  <p style="margin-top:12px;">
+    公式サイト: <a href="https://genspark.ai" target="_blank" rel="noopener">genspark.ai</a>
+  </p>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+  /* ---- Accordion ---- */
+  function toggleAcc(id) {
+    const item = document.getElementById(id);
+    const body = document.getElementById(id + '-body');
+    const isOpen = item.classList.contains('open');
+
+    // close all
+    document.querySelectorAll('.acc-item.open').forEach(el => {
+      el.classList.remove('open');
+      el.querySelector('.acc-body').style.maxHeight = '0';
+    });
+
+    if (!isOpen) {
+      item.classList.add('open');
+      body.style.maxHeight = body.scrollHeight + 'px';
+    }
+  }
+
+  /* ---- FAQ ---- */
+  function toggleFaq(id) {
+    const item = document.getElementById(id);
+    const body = document.getElementById(id + '-body');
+    const isOpen = item.classList.contains('open');
+
+    document.querySelectorAll('.faq-item.open').forEach(el => {
+      el.classList.remove('open');
+      el.querySelector('.faq-body').style.maxHeight = '0';
+    });
+
+    if (!isOpen) {
+      item.classList.add('open');
+      body.style.maxHeight = body.scrollHeight + 'px';
+    }
+  }
+
+  /* ---- Copy button ---- */
+  function copyCode(btn) {
+    const block = btn.closest('.code-block');
+    const text = block.innerText
+      .replace(/^コピー\n?/, '')
+      .replace(/^Instructions（指示文）\n?/, '')
+      .replace(/^Instructions 追記用テキスト\n?/, '')
+      .trim();
+
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'コピー済 ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'コピー';
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(() => {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = 'コピー済 ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'コピー';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  /* ---- Smooth scroll for nav links ---- */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
